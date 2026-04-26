@@ -34,17 +34,25 @@ export function JobSearchClient({
   // Local state for instant selection
   const [selectedId, setSelectedId] = useState(initialSelectedId || (initialJobs.length > 0 ? initialJobs[0].id : ""));
   
-  // Sync state with URL when jobId changes externally or when new search results arrive
+  // Only reset to the first job when the actual search results (initialJobs) change
+  // this prevents jumping back when just clicking a job (which changes searchParams but not initialJobs content)
+  const jobsSignature = initialJobs.map(j => j.id).join(",");
   useEffect(() => {
     const jobIdFromUrl = searchParams.get("jobId");
-    
     if (jobIdFromUrl) {
       setSelectedId(jobIdFromUrl);
     } else if (initialJobs.length > 0) {
-      // Fallback to first job if no ID in URL (e.g. after a new search)
       setSelectedId(initialJobs[0].id);
     }
-  }, [searchParams, initialJobs]);
+  }, [jobsSignature]); // Sync only when the result set itself changes
+
+  // Sync with URL for browser back/forward buttons
+  const urlJobId = searchParams.get("jobId");
+  useEffect(() => {
+    if (urlJobId && urlJobId !== selectedId) {
+      setSelectedId(urlJobId);
+    }
+  }, [urlJobId]);
 
   const handleSelectJob = (id: string) => {
     setSelectedId(id);
