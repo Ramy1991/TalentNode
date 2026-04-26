@@ -66,7 +66,6 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
     }
 
     // 4. Careerjet (Premium) - Fetch first 3 pages instead of 10 to save rate limits
-    const careerjetAffid = process.env.CAREERJET_AFFID;
     if (careerjetAffid) {
       for (let p = 1; p <= 3; p++) {
         const careerjetQuery = new URLSearchParams({
