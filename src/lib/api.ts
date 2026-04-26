@@ -15,26 +15,27 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
   try {
     const urls: { name: string; url: string }[] = [];
 
-    // 1. Arbeitnow (Free) - Fetch first 3 pages
-    for (let p = 1; p <= 3; p++) {
+    // 1. Arbeitnow (Free) - Fetch first 2 pages
+    for (let p = 1; p <= 2; p++) {
       urls.push({ name: 'arbeitnow', url: `https://arbeitnow.com/api/job-board-api?page=${p}` });
     }
 
     // 2. Remotive (Free) - Large single fetch
     if (query) {
-      urls.push({ name: 'remotive', url: `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(query)}&limit=250` });
+      urls.push({ name: 'remotive', url: `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(query)}&limit=150` });
     } else {
-      urls.push({ name: 'remotive', url: `https://remotive.com/api/remote-jobs?limit=250` });
+      urls.push({ name: 'remotive', url: `https://remotive.com/api/remote-jobs?limit=150` });
     }
 
-    // 3. Adzuna (Premium) - Fetch first 5 pages across multiple regions if no location specified
+    // 3. Adzuna (Premium) - Fetch limited pages/regions to avoid 429 Too Many Requests
     const adzunaAppId = process.env.ADZUNA_APP_ID;
     const adzunaAppKey = process.env.ADZUNA_APP_KEY;
     if (adzunaAppId && adzunaAppKey) {
-      // Expand regions for a truly global search
-      const regions = location ? ['us'] : ['us', 'gb', 'ca', 'au', 'de', 'fr', 'in'];
+      // Limit to max 3 requests for Adzuna (free tier is 25 per min)
+      const regions = location ? ['us'] : ['us', 'gb', 'ca'];
       for (const region of regions) {
-        for (let p = 1; p <= 3; p++) {
+        // Only 1 page per region to save rate limits
+        for (let p = 1; p <= 1; p++) {
           const adzunaQuery = new URLSearchParams({
             app_id: adzunaAppId,
             app_key: adzunaAppKey,
@@ -48,10 +49,10 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
       }
     }
 
-    // 4. Careerjet (Premium) - Fetch first 10 pages
+    // 4. Careerjet (Premium) - Fetch first 3 pages instead of 10 to save rate limits
     const careerjetAffid = process.env.CAREERJET_AFFID;
     if (careerjetAffid) {
-      for (let p = 1; p <= 10; p++) {
+      for (let p = 1; p <= 3; p++) {
         const careerjetQuery = new URLSearchParams({
           affid: careerjetAffid,
           keywords: query || '',

@@ -29,7 +29,7 @@ export default async function SearchPage({
   const paginatedJobs = jobs.slice(startIndex, startIndex + itemsPerPage);
 
   const selectedJob = selectedJobId 
-    ? await getJobById(selectedJobId, query, location, remoteOnly)
+    ? jobs.find(job => job.id === selectedJobId) || (paginatedJobs.length > 0 ? paginatedJobs[0] : null)
     : (paginatedJobs.length > 0 ? paginatedJobs[0] : null);
 
   return (
