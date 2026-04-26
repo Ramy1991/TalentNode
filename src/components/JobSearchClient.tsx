@@ -34,13 +34,17 @@ export function JobSearchClient({
   // Local state for instant selection
   const [selectedId, setSelectedId] = useState(initialSelectedId || (initialJobs.length > 0 ? initialJobs[0].id : ""));
   
-  // Sync state with URL when jobId changes externally (e.g. browser back button)
+  // Sync state with URL when jobId changes externally or when new search results arrive
   useEffect(() => {
-    const jobId = searchParams.get("jobId");
-    if (jobId && jobId !== selectedId) {
-      setSelectedId(jobId);
+    const jobIdFromUrl = searchParams.get("jobId");
+    
+    if (jobIdFromUrl) {
+      setSelectedId(jobIdFromUrl);
+    } else if (initialJobs.length > 0) {
+      // Fallback to first job if no ID in URL (e.g. after a new search)
+      setSelectedId(initialJobs[0].id);
     }
-  }, [searchParams, selectedId]);
+  }, [searchParams, initialJobs]);
 
   const handleSelectJob = (id: string) => {
     setSelectedId(id);
