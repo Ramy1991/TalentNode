@@ -173,8 +173,8 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const parsed = json.jobs.map((job: any) => {
             const locName = job.locations || 'Remote';
-            // Create a stable ID from the URL hash since Careerjet lacks IDs
-            const str = job.url || (job.title + job.company);
+            // Create a truly stable ID from title, company, and location since URLs contain dynamic tracking tokens
+            const str = `${job.title}|${job.company}|${locName}`;
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
               hash = ((hash << 5) - hash) + str.charCodeAt(i);
