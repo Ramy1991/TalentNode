@@ -39,10 +39,10 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
             app_id: adzunaAppId,
             app_key: adzunaAppKey,
             results_per_page: '50',
-            what: query || '',
-            where: location || '',
-            content_type: 'application/json'
           });
+          if (query) adzunaQuery.append('what', query);
+          if (location) adzunaQuery.append('where', location);
+
           urls.push({ name: 'adzuna', url: `https://api.adzuna.com/v1/api/jobs/${region}/search/${p}?${adzunaQuery.toString()}` });
         }
       }
