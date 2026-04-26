@@ -27,9 +27,25 @@ export async function fetchJobs(query?: string, location?: string, remoteOnly?: 
       urls.push({ name: 'remotive', url: `https://remotive.com/api/remote-jobs?limit=150` });
     }
 
+    // Fallback to Cloudflare bindings if standard process.env is empty
+    let adzunaAppId = process.env.ADZUNA_APP_ID;
+    let adzunaAppKey = process.env.ADZUNA_APP_KEY;
+    let careerjetAffid = process.env.CAREERJET_AFFID;
+
+    try {
+      // Dynamic import to avoid breaking local Next.js dev if not configured
+      const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+      const cf = await getCloudflareContext();
+      if (cf?.env) {
+        adzunaAppId = adzunaAppId || (cf.env as any).ADZUNA_APP_ID;
+        adzunaAppKey = adzunaAppKey || (cf.env as any).ADZUNA_APP_KEY;
+        careerjetAffid = careerjetAffid || (cf.env as any).CAREERJET_AFFID;
+      }
+    } catch (e) {
+      // Ignore errors (expected during local dev or build)
+    }
+
     // 3. Adzuna (Premium) - Fetch limited pages/regions to avoid 429 Too Many Requests
-    const adzunaAppId = process.env.ADZUNA_APP_ID;
-    const adzunaAppKey = process.env.ADZUNA_APP_KEY;
     if (adzunaAppId && adzunaAppKey) {
       // Limit to max 3 requests for Adzuna (free tier is 25 per min)
       const regions = location ? ['us'] : ['us', 'gb', 'ca'];
